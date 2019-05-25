@@ -8,13 +8,15 @@ import java.util.*;
 public class DijkstraPathFinder implements PathFinder
 {
     // TODO: You might need to implement some attributes
-	private Map<Coordinate, Integer> visited;
+	private ArrayList<Coordinate> visited;
 	private List<Coordinate> unvisited;
+	private Map<Coordinate, ArrayList<Coordinate>> weight;
 	private PathMap map;
 
     public DijkstraPathFinder(PathMap map) {
 		this.map = map;	
-		visited = new HashMap<Coordinate, Integer>();
+		visited = new ArrayList<Coordinate>();
+		weight = new HashMap<Coordinate, ArrayList<Coordinate>>();
 		unvisited = new ArrayList<Coordinate>();
     } // end of DijkstraPathFinder()
 
@@ -25,9 +27,6 @@ public class DijkstraPathFinder implements PathFinder
         // You can replace this with your favourite list, but note it must be a
         // list type
         List<Coordinate> path = new ArrayList<Coordinate>();
-		// Creating two maps to store visited locations.
-        visited = new HashMap<Coordinate, Integer>();
-		unvisited = new ArrayList<Coordinate>();
 		
 		Coordinate mapCells[][] = map.getCells();
 		List<Coordinate> originCells = map.getOrigins();
@@ -35,41 +34,115 @@ public class DijkstraPathFinder implements PathFinder
 		
 		for (int i = 0; i < mapCells.length; i++) {
 			for (int j = 0; j < mapCells[i].length; j++) {
-				System.out.println(mapCells[i][j].getRow() + ", " + mapCells[i][j].getColumn());
-				unvisited.add(mapCells[i][j]);
+				// System.out.println(mapCells[i][j].getRow() + ", " + mapCells[i][j].getColumn());
+				if (mapCells[i][j].getImpassable() == false) {
+					unvisited.add(mapCells[i][j]);
+				}
 			}
+		}
+		
+		for (Coordinate coord : unvisited) {
+			System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn());
 		}
 		
 		System.out.println("the origin is: " + originCells.get(0).getRow() + ", " + originCells.get(0).getColumn());
 		System.out.println("the destination is: " + destCells.get(0).getRow() + ", " + destCells.get(0).getColumn());
 		
-		for (Coordinate coord : originCells) {
-			// Marking origin cells with weight zero.
-			visited.put(coord, 0);
-			path.add(coord);
-		}		
+		// Main loop.
+		// Get neighbours of current cell.
+		// Find neighbour with lowest weight.
+		// Add to visited list with cumulative weight.
+		// Remove current cell from unvisited.
+		// Move to neighbour with lowest weight.
+		// Add to cumulative weight?
 		
-		List<Coordinate> sourceNeighbours = getNeighbours(mapCells, originCells.get(0).getRow(), originCells.get(0).getColumn());
-		// Finding neighbour with lowest weight.
-		System.out.println("The neighbours of the source vertex are: ");
+		Coordinate currentCell = originCells.get(0);
+		ArrayList<Coordinate> tempPath = new ArrayList<Coordinate>();
+		tempPath.add(currentCell);
+		System.out.println(tempPath);
+		weight.put(currentCell, new ArrayList<Coordinate>(tempPath));
 		
-		for (Coordinate coord : sourceNeighbours) {
-			System.out.println(coord.getRow() + ", " + coord.getColumn());
-		}
 		
-		int lowestWeight = 1;
-		Coordinate nextCoord = null;
-		
-		for (Coordinate coord : sourceNeighbours) {
-			if (coord.getTerrainCost() <= lowestWeight) {
-				lowestWeight = coord.getTerrainCost();
-				nextCoord = coord;
+		while (unvisited.isEmpty() == false && weight.containsKey(destCells.get(0)) == false) {
+			
+			visited.add(currentCell);
+			
+			ArrayList<Coordinate> neighbours = new ArrayList<Coordinate>();
+			if (tempPath.size() == 1) {
+				neighbours = getNeighbours(mapCells, currentCell.getRow(), currentCell.getColumn());
+			} else {
+				for (Coordinate coord : tempPath) {
+					ArrayList<Coordinate> tempNeighbours = new ArrayList<Coordinate>();
+					tempNeighbours = getNeighbours(mapCells, coord.getRow(), coord.getColumn());
+					for (Coordinate neighbour : tempNeighbours) {
+						if (neighbours.contains(neighbour) == false && tempPath.contains(neighbour) == false) {
+							neighbours.add(neighbour);
+						}
+					}
+				}
 			}
+			
+			System.out.println("Curr Cell Row: " + currentCell.getRow() + ", Column: " + currentCell.getColumn());
+			System.out.println("\n" + "Known Weights");
+			
+			for (Coordinate coord : weight.keySet()) {
+				System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn() + ", Shortest Path: " + costOfPath(weight.get(coord)));
+			}
+			
+			System.out.println();
+			
+			visited.add(currentCell);
+			int indexToDelete = unvisited.indexOf(currentCell);
+			unvisited.remove(indexToDelete);
+			
+			for (Coordinate coord : neighbours) {
+				ArrayList<Coordinate> pathToNeighbour = new ArrayList<Coordinate>(tempPath);
+				pathToNeighbour.add(coord);
+				System.out.println(pathToNeighbour);
+				if (weight.containsKey(coord) == false) {
+					weight.put(coord, new ArrayList<Coordinate>(pathToNeighbour));
+					System.out.println("Not in map, adding...");
+				} else {
+					if (weight.containsKey(coord) == true) {
+						if (costOfPath(pathToNeighbour) < costOfPath(weight.get(coord))) {
+							System.out.println(costOfPath(pathToNeighbour) + " < " + costOfPath(weight.get(coord)));
+							weight.put(coord, new ArrayList<Coordinate>(pathToNeighbour));
+							System.out.println("Is in map, updating...");
+						}
+					} else {
+						System.out.println("Already in map!");
+					}
+				}
+			}
+			
+			int lowestWeight = 10000000;
+			Coordinate lowestNeighbour = null;
+			
+			for (Coordinate coord : neighbours) {
+				ArrayList<Coordinate> pathToNeighbour = new ArrayList<Coordinate>(tempPath);
+				pathToNeighbour.add(coord);
+				if (visited.contains(coord) == false && costOfPath(pathToNeighbour) < lowestWeight) {
+					lowestWeight = coord.getTerrainCost();
+					lowestNeighbour = coord;
+				}
+			}
+			
+			tempPath.add(lowestNeighbour);
+			currentCell = lowestNeighbour;
+				
+			
+		} // end main loop
+		
+		
+		System.out.println("End of loop");
+		
+		for (Coordinate coord : weight.keySet()) {
+			System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn() + ", Shortest Path: " + costOfPath(weight.get(coord)));
+			System.out.println(weight.get(coord));
 		}
 		
-		int costOfPrevious = lowestWeight;
-		
-		System.out.println("The next place to visit is: " + nextCoord.getRow() + ", " + nextCoord.getColumn());
+		path = weight.get(destCells.get(0));
+			
         return path;
     } // end of findPath()
 
@@ -82,8 +155,8 @@ public class DijkstraPathFinder implements PathFinder
         return 0;
     } // end of cellsExplored()
 	
-	private List<Coordinate> getNeighbours(Coordinate mapCells[][], int originRow, int originCol) {
-		List<Coordinate> neighbours = new ArrayList<Coordinate>();
+	private ArrayList<Coordinate> getNeighbours(Coordinate mapCells[][], int originRow, int originCol) {
+		ArrayList<Coordinate> neighbours = new ArrayList<Coordinate>();
 		int currentCellRow = originRow;
 		int currentCellCol = originCol;
 		
@@ -102,7 +175,7 @@ public class DijkstraPathFinder implements PathFinder
 		}
 		
 		// Gets above neighbour of cell.
-		if (currentCellRow >= 0 && currentCellRow <= map.getRowSize() - 1) {
+		if (currentCellRow >= 0 && currentCellRow < map.getRowSize() - 1) {
 			if (mapCells[currentCellRow + 1][currentCellCol].getImpassable() == false) {
 				neighbours.add(mapCells[currentCellRow + 1][currentCellCol]);
 			}
@@ -116,6 +189,18 @@ public class DijkstraPathFinder implements PathFinder
 		}
 		
 		return neighbours;
+	}
+	
+	int costOfPath(ArrayList<Coordinate> path) {
+		int pathWeight = 0;
+		
+		if (path.size() > 0) {
+			for (int i = 0; i < path.size() - 1; i++) {
+				pathWeight += path.get(i).getTerrainCost();
+			}
+		}
+		
+		return pathWeight;
 	}
 
 
