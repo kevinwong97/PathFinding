@@ -17,167 +17,177 @@ public class DijkstraPathFinder implements PathFinder
 		visited = new ArrayList<Coordinate>();
 		weight = new HashMap<Coordinate, ArrayList<Coordinate>>();
 		unvisited = new ArrayList<Coordinate>();
-    } // end of DijkstraPathFinder()
-
-
-
+    }
+	
     @Override
     public List<Coordinate> findPath() {
         
         List<Coordinate> path = new ArrayList<Coordinate>();
+		ArrayList<ArrayList<Coordinate>> multiPath = new ArrayList<ArrayList<Coordinate>>();
 		
 		// Getting elements of the grid. Cells, origins and destinations.
 		Coordinate mapCells[][] = map.getCells();
 		List<Coordinate> originCells = map.getOrigins();
 		List<Coordinate> destCells = map.getDestinations();
 		
-		// Populating unvisited with cells that can be visited (must not be impassable).
-		for (int i = 0; i < mapCells.length; i++) {
-			for (int j = 0; j < mapCells[i].length; j++) {
-				if (mapCells[i][j].getImpassable() == false) {
-					unvisited.add(mapCells[i][j]);
-				}
-			}
-		}
-		
 		// Printing all the unvisited coordinates.
 		for (Coordinate coord : unvisited) {
 			System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn());
 		}
 		
-		System.out.println("the origin is: " + originCells.get(0).getRow() + ", " + originCells.get(0).getColumn());
-		System.out.println("the destination is: " + destCells.get(0).getRow() + ", " + destCells.get(0).getColumn());
-		
-		// Main loop.
-		// Get neighbours of current cell.
-		// Find neighbour with lowest weight.
-		// Add to visited list with cumulative weight.
-		// Remove current cell from unvisited.
-		// Move to neighbour with lowest weight.
-		// Add to cumulative weight?
-		
-		// Set the current cell in the loop as the origin.
-		Coordinate currentCell = originCells.get(0);
-		
-		// Make an array list that contains a path to the origin (a path to itself).
-		ArrayList<Coordinate> pathToOrigin = new ArrayList<Coordinate>();
-		pathToOrigin.add(currentCell);
-		
-		// Putting the origin in the known weight map.
-		weight.put(currentCell, pathToOrigin);
-		
-		// Will loop until the algorithm finds a path to the destination or it runs out of cells to visit.
-		while (unvisited.isEmpty() == false && weight.containsKey(destCells.get(0)) == false) {
-			
-			// Mark the current cell as visited.
-			visited.add(currentCell);
-			
-			// Remove the cell from unvisited.
-			int indexToDelete = unvisited.indexOf(currentCell);
-			unvisited.remove(indexToDelete);
-			
-			// Create an ArrayList to represent the path from the origin to that node.
-			ArrayList<Coordinate> tempPath = new ArrayList<Coordinate>(weight.get(currentCell));
-			
-			// Create an ArrayList to represent neighbours of a given cell.
-			ArrayList<Coordinate> neighbours = new ArrayList<Coordinate>();
-			// If the path consists of one cell, get the cells that surround that cell.
-			if (tempPath.size() == 1) {
-				neighbours = getNeighbours(mapCells, currentCell.getRow(), currentCell.getColumn());
-			} else {
-				// If it contains more than one cell, obtain every neighbour of every cell in the path that has not been visited.
-				for (Coordinate coord : visited) {
-					ArrayList<Coordinate> tempNeighbours = new ArrayList<Coordinate>();
-					tempNeighbours = getNeighbours(mapCells, coord.getRow(), coord.getColumn());
-					for (Coordinate neighbour : tempNeighbours) {
-						if (neighbours.contains(neighbour) == false && visited.contains(neighbour) == false) {
-							neighbours.add(neighbour);
-						}
-					}
-				}
-			}
-			
-			// Debug printing stuff.
-			System.out.println("Curr Cell Row: " + currentCell.getRow() + ", Column: " + currentCell.getColumn());
-			System.out.println("\n" + "Known Weights");
-			
-			for (Coordinate coord : weight.keySet()) {
-				System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn() + ", Shortest Path: " + costOfPath(weight.get(coord)));
-			}
-			
-			System.out.println();
-			
-			// For every cell in neighbours list...
-			for (Coordinate coord : neighbours) {
-				// Shallow copy the path to the current node.
-				ArrayList<Coordinate> pathToNeighbour = new ArrayList<Coordinate>(tempPath);
-				// Add the neighbour to it.
-				pathToNeighbour.add(coord);
-				System.out.println(pathToNeighbour);
-				// If the weight is new, put it in the map with the pathToNeighbour.
-				if (weight.containsKey(coord) == false) {
-					weight.put(coord, new ArrayList<Coordinate>(pathToNeighbour));
-					System.out.println("Not in map, adding...");
-				} else {
-					// If there is already a weight to the current neighbour...
-					if (weight.containsKey(coord) == true) {
-						// Check if the new path is shorter than the stored path.
-						if (costOfPath(pathToNeighbour) < costOfPath(weight.get(coord))) {
-							System.out.println(costOfPath(pathToNeighbour) + " < " + costOfPath(weight.get(coord)));
-							// Put path in map.
-							weight.put(coord, new ArrayList<Coordinate>(pathToNeighbour));
-							System.out.println("Is in map, updating...");
-						}
-					} else {
-						System.out.println("Already in map!");
-					}
-				}
-			}
-			
-			// Set the lowest weight to an arbitrary very high number.
-			int lowestWeight = 10000000;
-			Coordinate lowestNeighbour = null;
-			
-			// More debug printing stuff.
-			System.out.println("Printing neighbours...");
-			
-			for (Coordinate coord : neighbours) {
-				System.out.println(coord.getRow() + ", " + coord.getColumn() + ", Cost: " + weight.get(coord));
-			}
-			
-			// For all neighbours, find the shortest path to a neighbouring coordinate.
-			for (Coordinate coord : neighbours) {
-				ArrayList<Coordinate> pathToNeighbour = new ArrayList<Coordinate>(tempPath);
-				pathToNeighbour.add(coord);
-				if (visited.contains(coord) == false && costOfPath(pathToNeighbour) <= lowestWeight) {
-					lowestWeight = coord.getTerrainCost();
-					lowestNeighbour = coord;
-				}
-			}
-			
-			// Add the lowest neighbour to the temporary path.
-			tempPath.add(lowestNeighbour);
-			
-			// Set lowest neighbour to be next to visit.
-			currentCell = lowestNeighbour;
+		// This loop is relevant to Task C.
+		// Loop through all origin cells and all destination cells.
+		for (Coordinate sourceCoord : originCells) {
+			for (Coordinate destCoord : destCells) {
 				
-			
-		} // end main loop
+				visited.removeAll(visited);
+				weight.clear();
+				unvisited.removeAll(unvisited);
+				
+				// Populating unvisited with cells that can be visited (must not be impassable).
+				for (int i = 0; i < mapCells.length; i++) {
+					for (int j = 0; j < mapCells[i].length; j++) {
+						if (mapCells[i][j].getImpassable() == false) {
+							unvisited.add(mapCells[i][j]);
+						}
+					}
+				}
+				
+				// Set the current cell in the loop as the origin.
+				Coordinate currentCell = sourceCoord;
 		
-		
-		// Even more debug printing stuff.
-		System.out.println("End of loop");
-		
-		for (Coordinate coord : weight.keySet()) {
-			System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn() + ", Shortest Path: " + costOfPath(weight.get(coord)));
-			System.out.println(weight.get(coord));
+				// Make an array list that contains a path to the origin (a path to itself).
+				ArrayList<Coordinate> pathToOrigin = new ArrayList<Coordinate>();
+				pathToOrigin.add(currentCell);
+				
+				// Putting the origin in the known weight map.
+				weight.put(currentCell, pathToOrigin);
+				
+				// Will loop until the algorithm finds a path to the destination or it runs out of cells to visit.
+				// This loop is relevant to Tasks A and B.
+				while (unvisited.isEmpty() == false && weight.containsKey(destCoord) == false) {
+					
+					// Mark the current cell as visited.
+					visited.add(currentCell);
+					
+					// Remove the cell from unvisited.
+					int indexToDelete = unvisited.indexOf(currentCell);
+					unvisited.remove(indexToDelete);
+					
+					// Create an ArrayList to represent the path from the origin to that node.
+					ArrayList<Coordinate> tempPath = new ArrayList<Coordinate>(weight.get(currentCell));
+					
+					// Create an ArrayList to represent neighbours of a given cell.
+					ArrayList<Coordinate> neighbours = new ArrayList<Coordinate>();
+					// If the path consists of one cell, get the cells that surround that cell.
+					if (tempPath.size() == 1) {
+						neighbours = getNeighbours(mapCells, currentCell.getRow(), currentCell.getColumn());
+					} else {
+						// If it contains more than one cell, obtain every neighbour of every cell in the path that has not been visited.
+						for (Coordinate coord : visited) {
+							ArrayList<Coordinate> tempNeighbours = new ArrayList<Coordinate>();
+							tempNeighbours = getNeighbours(mapCells, coord.getRow(), coord.getColumn());
+							for (Coordinate neighbour : tempNeighbours) {
+								if (neighbours.contains(neighbour) == false && visited.contains(neighbour) == false) {
+									neighbours.add(neighbour);
+								}
+							}
+						}
+					}
+					
+					// Debug printing stuff.
+					System.out.println("Curr Cell Row: " + currentCell.getRow() + ", Column: " + currentCell.getColumn());
+					System.out.println("\n" + "Known Weights");
+					
+					for (Coordinate coord : weight.keySet()) {
+						System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn() + ", Shortest Path: " + costOfPath(weight.get(coord)));
+					}
+					
+					System.out.println();
+					
+					// For every cell in neighbours list...
+					for (Coordinate coord : neighbours) {
+						// Shallow copy the path to the current node.
+						ArrayList<Coordinate> pathToNeighbour = new ArrayList<Coordinate>(tempPath);
+						// Add the neighbour to it.
+						pathToNeighbour.add(coord);
+						System.out.println(pathToNeighbour);
+						// If the weight is new, put it in the map with the pathToNeighbour.
+						if (weight.containsKey(coord) == false) {
+							weight.put(coord, new ArrayList<Coordinate>(pathToNeighbour));
+							System.out.println("Not in map, adding...");
+						} else {
+							// If there is already a weight to the current neighbour...
+							if (weight.containsKey(coord) == true) {
+								// Check if the new path is shorter than the stored path.
+								if (costOfPath(pathToNeighbour) < costOfPath(weight.get(coord))) {
+									System.out.println(costOfPath(pathToNeighbour) + " < " + costOfPath(weight.get(coord)));
+									// Put path in map.
+									weight.put(coord, new ArrayList<Coordinate>(pathToNeighbour));
+									System.out.println("Is in map, updating...");
+								}
+							} else {
+								System.out.println("Already in map!");
+							}
+						}
+					}
+					
+					// Set the lowest weight to an arbitrary very high number.
+					int lowestWeight = 10000000;
+					Coordinate lowestNeighbour = null;
+					
+					// More debug printing stuff.
+					System.out.println("Printing neighbours...");
+					
+					for (Coordinate coord : neighbours) {
+						System.out.println(coord.getRow() + ", " + coord.getColumn() + ", Cost: " + weight.get(coord));
+					}
+					
+					// For all neighbours, find the shortest path to a neighbouring coordinate.
+					for (Coordinate coord : neighbours) {
+						ArrayList<Coordinate> pathToNeighbour = new ArrayList<Coordinate>(tempPath);
+						pathToNeighbour.add(coord);
+						if (visited.contains(coord) == false && costOfPath(pathToNeighbour) <= lowestWeight) {
+							lowestWeight = coord.getTerrainCost();
+							lowestNeighbour = coord;
+						}
+					}
+					
+					// Add the lowest neighbour to the temporary path.
+					tempPath.add(lowestNeighbour);
+					
+					// Set lowest neighbour to be next to visit.
+					currentCell = lowestNeighbour;
+						
+					
+				} // end main loop
+				
+				
+				// Even more debug printing stuff.
+				System.out.println("End of loop");
+				
+				for (Coordinate coord : weight.keySet()) {
+					System.out.println("Row: " + coord.getRow() + ", Column: " + coord.getColumn() + ", Shortest Path: " + costOfPath(weight.get(coord)));
+					System.out.println(weight.get(coord));
+				}
+				
+				// Get the path to the destination cell and return it.
+				multiPath.add(weight.get(destCoord));
+			}
 		}
 		
-		// Get the path to the destination cell and return it.
-		path = weight.get(destCells.get(0));
+		// This block is relevant to Task C.
+		ArrayList<Coordinate> shortestPath = multiPath.get(0);
+		
+		for (ArrayList<Coordinate> candidatePath : multiPath) {
+			if (costOfPath(candidatePath) < costOfPath(shortestPath)) {
+				shortestPath = candidatePath;
+			}
+		}
+		
 			
-        return path;
-    } // end of findPath()
+        return shortestPath;
+    }
 
 
     @Override
