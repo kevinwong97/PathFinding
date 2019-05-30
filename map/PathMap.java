@@ -204,25 +204,29 @@ public class PathMap
             }
         }
     } // end of drawPath()
-	
-	public Coordinate[][] getCells() {
-		return cells;
-	}
-	
-	public List<Coordinate> getOrigins() {
-		return originCells;
-	}
-	
-	public List<Coordinate> getDestinations() {
-		return destCells;
-	}
-	
-	public int getRowSize() {
-		return sizeR;
-	}
-	
-	public int getColSize() {
-		return sizeC;
-	}
+    
+    public Coordinate[][] getCells() {
+        return cells;
+    }
+    
+    public List<Coordinate> getOrigins() {
+        return originCells;
+    }
+    
+    public List<Coordinate> getDestinations() {
+        return destCells;
+    }
+
+    public List<Coordinate> getWaypoints() {
+        return waypointCells;
+    }
+    
+    public int getRowSize() {
+        return sizeR;
+    }
+    
+    public int getColSize() {
+        return sizeC;
+    }
 
 } // end of class PathMap

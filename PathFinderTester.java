@@ -1,6 +1,8 @@
+
 import java.io.*;
 import java.util.*;
 import joptsimple.OptionParser;
+
 import joptsimple.OptionSet;
 
 import map.*;
@@ -305,15 +307,15 @@ class PathFinderTester
             outStream.println("A path has been found.");
             // print out path
             Iterator<Coordinate> it = path.iterator();
-			if (it.hasNext()) {
-				Coordinate coord = it.next();
-				outStream.print("(" + coord.getRow() + "," + coord.getColumn() +")" );
-			}
-			while(it.hasNext()){
-				Coordinate coord = it.next();
-				outStream.print(" -> (" + coord.getRow() + "," + coord.getColumn() +")" );
-			}
-			outStream.println("");
+            if (it.hasNext()) {
+                Coordinate coord = it.next();
+                outStream.print("(" + coord.getRow() + "," + coord.getColumn() +")" );
+            }
+            while(it.hasNext()){
+                Coordinate coord = it.next();
+                outStream.print(" -> (" + coord.getRow() + "," + coord.getColumn() +")" );
+            }
+            outStream.println("");
             // This is optional, more for your own curiousity (not tested)
             outStream.println("Number of coordinates visited = " + pathFinder.coordinatesExplored());
 
@@ -326,13 +328,13 @@ class PathFinderTester
                     PrintWriter writer = new PrintWriter(new FileWriter(outputFilename));
                     it = path.iterator();
                     if (it.hasNext()) {
-        				Coordinate coord = it.next();
-        				writer.print("(" + coord.getRow() + "," + coord.getColumn() +")" );
-        			}
-        			while(it.hasNext()){
-        				Coordinate coord = it.next();
-        				writer.print(" (" + coord.getRow() + "," + coord.getColumn() +")" );
-        			}
+                        Coordinate coord = it.next();
+                        writer.print("(" + coord.getRow() + "," + coord.getColumn() +")" );
+                    }
+                    while(it.hasNext()){
+                        Coordinate coord = it.next();
+                        writer.print(" (" + coord.getRow() + "," + coord.getColumn() +")" );
+                    }
                     writer.println("");
                     writer.close();
                 }

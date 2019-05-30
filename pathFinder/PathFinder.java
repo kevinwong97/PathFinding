@@ -17,7 +17,12 @@ public interface PathFinder {
      */
     public abstract List<Coordinate> findPath();
 
-
+    /**
+     * Find shortest path for the map with waypoints
+     * @return
+     */
+    public abstract List<Coordinate> findPath2();
+    
     /**
      * Use after findPath(), counting the number of cells explored when finding the path.
      *
