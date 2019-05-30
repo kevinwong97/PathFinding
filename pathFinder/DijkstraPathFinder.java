@@ -18,17 +18,225 @@ public class DijkstraPathFinder implements PathFinder
 		weight = new HashMap<Coordinate, ArrayList<Coordinate>>();
 		unvisited = new ArrayList<Coordinate>();
     }
-	
+    /**
+     * Finds shortest path that passes through waypoints ...Short for test D
+     * @return returns a list containing the coordinates of the path
+     */
+	public List<Coordinate> findPath2()
+	{
+		List<Coordinate> path = new ArrayList<Coordinate>();
+		
+		// Getting elements of the grid. Cells, origins, destinations and waypoints.
+		Coordinate mapCells[][] = map.getCells();
+		List<Coordinate> originCells = map.getOrigins();
+		List<Coordinate> destCells = map.getDestinations();
+		List<Coordinate> waypoints = map.getWaypoints();
+		
+		//find the waypoint that is nearer to the origin
+		List<Coordinate> pointsInOrder = new LinkedList<Coordinate>();//Stores the waypoints in order
+		Coordinate origin = originCells.get(0);//Assuming the origin is only one in the list
+		Coordinate destination = destCells.get(0);//Assume one destination for task D's sake
+		Coordinate waypoint = waypoints.get(0); //Say this is the nearest, ?prove me wrong...
+		Coordinate currentLoc = origin;//Set the current location to origin
+		
+		///<editor-fold desc="Loop Get waypoints in order" defaultstate="collapsed">
+		while(waypoints.size() != 0)
+		{
+			
+			int pathlength=0;
+			for(Coordinate wp: waypoints)
+			{
+				//distance is the diff in x coordianate + diff in y coordinates since no curves or diagonals
+				//look whether is impassable
+				int diffx = Math.abs(wp.getColumn() - currentLoc.getRow());
+				int diffy = Math.abs(wp.getRow() - currentLoc.getRow());
+				int len = diffx+diffy;
+				if(pathlength == 0)
+				{
+					//not assigned before, so assign
+					waypoint= wp;
+					pathlength = len;
+				}
+				else if(len <pathlength)
+				{
+					pathlength = len;
+					waypoint = wp;
+				}
+				//else ignore the path its long
+			}
+			//now got the nearest waypoint
+			//remove the waypoint from the list now to ensure not to check it again
+			waypoints.remove(waypoint);
+			pointsInOrder.add(waypoint); //Add to the new sorted list
+			currentLoc = waypoint;
+			//check if there's other waypoints
+			if(waypoints.size() == 0)
+			{
+				//stop getting next shortest waypoint and get paths now
+				break;
+			}
+			
+				//continue with loop to get next nearest waypoint
+			
+		}
+		///</editor-fold>
+		
+		//Now get the path from the origin to the dest
+		//you can add functionality to divert path on cost being high
+		path.add(origin);
+		//loop while the currentLoc'ation' is not the destination
+		currentLoc = origin;//reset to origin for the start
+		
+		boolean notfinished = true;
+		while(currentLoc != destination || notfinished)
+		{
+			
+			//travel to the next waypoint
+			while(pointsInOrder.size() != 0)
+			{
+				//Get the waypoints in accordance to their distance from the previous point...at the start always origin
+				waypoint = pointsInOrder.get(0);
+				pointsInOrder.remove(waypoint);
+				
+				//create points along path iteratively
+				Coordinate currPoint = currentLoc;
+				
+				//Check direction of the next point
+				//if next rowpoint is greater than this ones then
+				if(waypoint.getRow()>currPoint.getRow())
+				while(currPoint.getRow()<waypoint.getRow())
+				{
+					//increment the row
+					//and add to the path
+					currPoint = new Coordinate(currPoint.getRow()+1, currPoint.getColumn());
+					path.add(currPoint);
+				}
+				else
+				{
+					
+					if(waypoint.getColumn()>currPoint.getColumn())
+						//now increment column
+						while(currPoint.getColumn()< waypoint.getColumn())
+						{
+							currPoint = new Coordinate(currPoint.getRow(),currPoint.getColumn()+1);
+							path.add(currPoint); 
+						}
+					while(currPoint.getRow()>waypoint.getRow())
+					{
+						//increment the row
+						//and add to the path
+						currPoint = new Coordinate(currPoint.getRow()-1, currPoint.getColumn());
+						path.add(currPoint);
+					}
+				}
+				if(waypoint.getColumn()>currPoint.getColumn())
+				//now increment column
+				while(currPoint.getColumn()< waypoint.getColumn())
+				{
+					currPoint = new Coordinate(currPoint.getRow(),currPoint.getColumn()+1);
+					path.add(currPoint); 
+				}
+				else
+				{
+					if(waypoint.getRow()<currPoint.getRow())
+						while(currPoint.getRow()>waypoint.getRow())
+						{
+							//increment the row
+							//and add to the path
+							currPoint = new Coordinate(currPoint.getRow()-1, currPoint.getColumn());
+							path.add(currPoint);
+						}
+					while(currPoint.getColumn()> waypoint.getColumn())
+					{
+						currPoint = new Coordinate(currPoint.getRow(),currPoint.getColumn()-1);
+						path.add(currPoint);
+					}
+				}
+				currentLoc = waypoint;//This becomes my new location or 'origin'
+			}
+			if(notfinished)
+			{//now the last point which is the destination
+				//Get the waypoints in accordance to their distance from the previous point...at the start always origin
+				waypoint = destination;
+				//create points along path iteratively
+				Coordinate currPoint = currentLoc;
+				
+				//Check direction of the next point
+				//if next rowpoint is greater than this ones then
+				if(waypoint.getRow()>currPoint.getRow())
+				while(currPoint.getRow()<waypoint.getRow())
+				{
+					//increment the row
+					//and add to the path
+					currPoint = new Coordinate(currPoint.getRow()+1, currPoint.getColumn());
+					path.add(currPoint);
+				}
+				else
+				{
+					
+					if(waypoint.getColumn()>currPoint.getColumn())
+						//now increment column
+						while(currPoint.getColumn()< waypoint.getColumn())
+						{
+							currPoint = new Coordinate(currPoint.getRow(),currPoint.getColumn()+1);
+							path.add(currPoint); 
+						}
+					while(currPoint.getRow()>waypoint.getRow())
+					{
+						//increment the row
+						//and add to the path
+						currPoint = new Coordinate(currPoint.getRow()-1, currPoint.getColumn());
+						path.add(currPoint);
+					}
+				}
+				if(waypoint.getColumn()>currPoint.getColumn())
+				//now increment column
+				while(currPoint.getColumn()< waypoint.getColumn())
+				{
+					currPoint = new Coordinate(currPoint.getRow(),currPoint.getColumn()+1);
+					path.add(currPoint); 
+				}
+				else
+				{
+					if(waypoint.getRow()<currPoint.getRow())
+						while(currPoint.getRow()>waypoint.getRow())
+						{
+							//increment the row
+							//and add to the path
+							currPoint = new Coordinate(currPoint.getRow()-1, currPoint.getColumn());
+							path.add(currPoint);
+						}
+					while(currPoint.getColumn()> waypoint.getColumn())
+					{
+						currPoint = new Coordinate(currPoint.getRow(),currPoint.getColumn()-1);
+						path.add(currPoint);
+					}
+				}
+				currentLoc = waypoint;//This becomes my new location or 'origin'
+			}
+			if(currentLoc == destination) notfinished = false;
+			if(notfinished)
+			if(pointsInOrder.size() == 0)
+			{
+				currentLoc = destination;
+				notfinished = false;
+			}
+			
+		}
+		path.add(destination);
+		return path;
+	}
     @Override
     public List<Coordinate> findPath() {
         
         List<Coordinate> path = new ArrayList<Coordinate>();
 		ArrayList<ArrayList<Coordinate>> multiPath = new ArrayList<ArrayList<Coordinate>>();
 		
-		// Getting elements of the grid. Cells, origins and destinations.
+		// Getting elements of the grid. Cells, origins, destinations and waypoints.
 		Coordinate mapCells[][] = map.getCells();
 		List<Coordinate> originCells = map.getOrigins();
 		List<Coordinate> destCells = map.getDestinations();
+		List<Coordinate> waypoints = map.getWaypoints();
 		
 		// Printing all the unvisited coordinates.
 		for (Coordinate coord : unvisited) {
@@ -47,6 +255,7 @@ public class DijkstraPathFinder implements PathFinder
 				// Populating unvisited with cells that can be visited (must not be impassable).
 				for (int i = 0; i < mapCells.length; i++) {
 					for (int j = 0; j < mapCells[i].length; j++) {
+						
 						if (mapCells[i][j].getImpassable() == false) {
 							unvisited.add(mapCells[i][j]);
 						}
