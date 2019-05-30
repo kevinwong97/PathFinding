@@ -298,7 +298,7 @@ class PathFinderTester
         outStream.println(pathFinder.getClass().getSimpleName() + " is finding a path.");
 
         // find path
-        List<Coordinate> path = pathFinder.findPath2();
+        List<Coordinate> path = pathFinder.findPath();
 
         // check if a path has been found
         if (path.size() == 0) {
